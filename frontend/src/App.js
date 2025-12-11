@@ -146,7 +146,7 @@ function App() {
   const handleDelete = async (id, quotationNumber) => {
     if (!window.confirm(`Delete Quotation ${quotationNumber}?`)) return;
     try {
-      const response = await fetch(`http://localhost:5000/api/quotations/${id}`, { method: 'DELETE' });
+      const response = await fetch(`https://canary-enterprise-quotation.onrender.com/api/quotations/${id}`, { method: 'DELETE' });
       if (response.ok) {
         alert('🗑️ Deleted successfully!');
         loadQuotations();
