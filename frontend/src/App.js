@@ -20,7 +20,7 @@ function App() {
   const loadQuotations = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/quotations');
+      const res = await fetch('https://canary-enterprise-quotation.onrender.com/api/quotations');
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = await res.json();
       setQuotations(Array.isArray(data) ? data : []);
