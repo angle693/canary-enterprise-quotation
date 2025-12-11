@@ -102,7 +102,7 @@ function App() {
           body: JSON.stringify(payload)
         });
       } else {
-        response = await fetch('https://canary-enterprise-quotation.onrender.com/api/quotations/s', {
+        response = await fetch('https://canary-enterprise-quotation.onrender.com/api/quotations/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
