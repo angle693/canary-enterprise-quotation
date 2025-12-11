@@ -96,7 +96,7 @@ function App() {
     try {
       let response;
       if (editingId) {
-        response = await fetch(`http://localhost:5000/api/quotations/${editingId}`, {
+        response = await fetch(`https://canary-enterprise-quotation.onrender.com/api/quotations/${editingId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
