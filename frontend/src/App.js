@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import QuotationPDFView from './QuotationPDFView';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import './App.css';
 
 function App() {
   const [activeView, setActiveView] = useState('records');
@@ -10,6 +11,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [selectedQuotation, setSelectedQuotation] = useState(null);
   const [editingId, setEditingId] = useState(null); // null = create, string = edit
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (activeView === 'records') {
@@ -20,7 +22,7 @@ function App() {
   const loadQuotations = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/quotations');
+      const res = await fetch('https://canary-enterprise-quotation.onrender.com/api/quotations');
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = await res.json();
       setQuotations(Array.isArray(data) ? data : []);
@@ -96,13 +98,13 @@ function App() {
     try {
       let response;
       if (editingId) {
-        response = await fetch(`http://localhost:5000/api/quotations/${editingId}`, {
+        response = await fetch(`https://canary-enterprise-quotation.onrender.com/api/quotations/${editingId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
       } else {
-        response = await fetch('http://localhost:5000/api/quotations', {
+        response = await fetch('https://canary-enterprise-quotation.onrender.com/api/quotations/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -146,7 +148,7 @@ function App() {
   const handleDelete = async (id, quotationNumber) => {
     if (!window.confirm(`Delete Quotation ${quotationNumber}?`)) return;
     try {
-      const response = await fetch(`http://localhost:5000/api/quotations/${id}`, { method: 'DELETE' });
+      const response = await fetch(`https://canary-enterprise-quotation.onrender.com/api/quotations/${id}`, { method: 'DELETE' });
       if (response.ok) {
         alert('🗑️ Deleted successfully!');
         loadQuotations();
@@ -174,26 +176,18 @@ function App() {
   };
 
   return (
-    <div style={{ display: 'flex', height: '100vh', fontFamily: 'Arial, sans-serif', backgroundColor: '#f8f9fa' }}>
+    <div className="app-container">
       {/* Sidebar */}
-      <div style={{
-        width: '200px',
-        backgroundColor: '#fff',
-        borderRight: '1px solid #dee2e6',
-        padding: '20px 15px',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between'
-      }}>
+      <div className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '30px' }}>
-            <img src="/canary-logo.png" alt="Logo" style={{ height: '30px', marginRight: '10px' }} />
+          <div className="sidebar-header">
+            <img src="/canary-logo.png" alt="Logo" className="sidebar-logo" />
             <div>
-              <div style={{ fontWeight: 'bold', fontSize: '16px' }}>Canary</div>
-              <div style={{ fontSize: '12px', color: '#6c757d' }}>Enterprise</div>
+              <div className="sidebar-title">Canary</div>
+              <div className="sidebar-subtitle">Enterprise</div>
             </div>
           </div>
-          <nav>
+          <nav className="sidebar-nav">
             <div
               onClick={() => {
                 setEditingId(null);
@@ -203,51 +197,41 @@ function App() {
                   items: [{ description: '', price: '', quantity: '' }]
                 });
                 setActiveView('create');
+                setSidebarOpen(false);
               }}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                padding: '10px 15px',
-                cursor: 'pointer',
-                borderRadius: '4px',
-                backgroundColor: activeView === 'create' ? '#ffe0b2' : 'transparent',
-                color: activeView === 'create' ? '#000' : '#495057',
-                marginBottom: '8px'
-              }}
+              className={`nav-item ${activeView === 'create' ? 'active' : 'inactive'}`}
             >
               <span style={{ marginRight: '10px' }}>➕</span> Create Quotation
             </div>
             <div
-              onClick={() => setActiveView('records')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                padding: '10px 15px',
-                cursor: 'pointer',
-                borderRadius: '4px',
-                backgroundColor: activeView === 'records' ? '#ffe0b2' : 'transparent',
-                color: activeView === 'records' ? '#000' : '#495057'
+              onClick={() => {
+                setActiveView('records');
+                setSidebarOpen(false);
               }}
+              className={`nav-item ${activeView === 'records' ? 'active' : 'inactive'}`}
             >
               <span style={{ marginRight: '10px' }}>📋</span> Quotation Records
             </div>
           </nav>
         </div>
-        <div style={{ fontSize: '10px', color: '#6c757d', textAlign: 'center' }}>
+        <div className="sidebar-footer">
           © 2025 Canary Enterprise
         </div>
       </div>
 
+      {/* Sidebar Backdrop */}
+      {sidebarOpen && <div className="sidebar-backdrop" onClick={() => setSidebarOpen(false)}></div>}
+
       {/* Main Content */}
-      <div style={{ flex: 1, overflowY: 'auto' }}>
-        <div style={{
-          backgroundColor: '#fff',
-          padding: '15px 20px',
-          borderBottom: '1px solid #dee2e6',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}>
+      <div className="main-content">
+        <div className="header">
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="hamburger-btn"
+            style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', marginRight: '10px' }}
+          >
+            ☰
+          </button>
           <h2 style={{ margin: 0, fontSize: '20px' }}>Dashboard</h2>
           <div style={{ fontSize: '14px', color: '#6c757d' }}>
             {new Date().toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
@@ -258,7 +242,7 @@ function App() {
           {activeView === 'create' ? (
             <div>
               <h3>{editingId ? 'Edit Quotation' : 'Create New Quotation'}</h3>
-              <form onSubmit={handleSubmit} style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+              <form onSubmit={handleSubmit} className="form-container">
                 <div style={{ marginBottom: '20px' }}>
                   <label style={{ display: 'block', marginBottom: '5px' }}>Invoice Date:</label>
                   <input
@@ -271,15 +255,15 @@ function App() {
                   />
                 </div>
 
-                <div style={{ marginBottom: '20px' }}>
-                  <h4>Bill To</h4>
+                <div className="form-group">
+                  <h4 className="form-section-title">Bill To</h4>
                   <input
                     type="text"
                     name="billTo.name"
                     value={formData.billTo.name}
                     onChange={handleInputChange}
                     placeholder="Customer Name"
-                    style={{ display: 'block', width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ced4da', marginBottom: '8px' }}
+                    className="form-input"
                     required
                   />
                   <input
@@ -288,7 +272,7 @@ function App() {
                     value={formData.billTo.address}
                     onChange={handleInputChange}
                     placeholder="Address"
-                    style={{ display: 'block', width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ced4da', marginBottom: '8px' }}
+                    className="form-input"
                   />
                   <input
                     type="text"
@@ -296,7 +280,7 @@ function App() {
                     value={formData.billTo.city}
                     onChange={handleInputChange}
                     placeholder="City"
-                    style={{ display: 'block', width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ced4da' }}
+                    className="form-input"
                   />
                 </div>
 
@@ -368,20 +352,12 @@ function App() {
                 <button
                   type="button"
                   onClick={addItem}
-                  style={{
-                    padding: '8px 16px',
-                    backgroundColor: '#28a745',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    marginBottom: '20px'
-                  }}
+                  className="add-btn"
                 >
                   + Add Item
                 </button>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '20px', marginBottom: '20px' }}>
+                <div className="totals">
                   <div>
                     <div>Sub Total: ₹{subtotal.toFixed(2)}</div>
                     <div>CGST (9%): ₹{cgstAmount.toFixed(2)}</div>
@@ -391,15 +367,7 @@ function App() {
 
                 <button
                   type="submit"
-                  style={{
-                    padding: '10px 20px',
-                    backgroundColor: '#007bff',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '1rem'
-                  }}
+                  className="submit-btn"
                 >
                   {editingId ? 'Update Quotation' : 'Save Quotation'}
                 </button>
@@ -430,13 +398,8 @@ function App() {
               ) : quotations.length === 0 ? (
                 <p>No quotations found. Create one first!</p>
               ) : (
-                <div style={{
-                  backgroundColor: '#fff',
-                  borderRadius: '8px',
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-                  overflow: 'hidden'
-                }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <div className="records-table-container">
+                  <table className="records-table">
                     <thead>
                       <tr style={{ backgroundColor: '#f8f9fa', borderBottom: '1px solid #dee2e6' }}>
                         <th style={{ textAlign: 'left', padding: '12px 15px', fontWeight: 'bold' }}>Quotation No.</th>
@@ -450,85 +413,48 @@ function App() {
                     </thead>
                     <tbody>
                       {quotations.map((q) => (
-                        <tr key={q._id} style={{ borderBottom: '1px solid #dee2e6' }}>
-                          <td style={{ padding: '12px 15px' }}>
-                            <span style={{
-                              backgroundColor: '#ffe0b2',
-                              padding: '4px 8px',
-                              borderRadius: '12px',
-                              fontSize: '12px',
-                              fontWeight: 'bold'
-                            }}>
+                        <tr key={q._id}>
+                          <td>
+                            <span className="quotation-number">
                               #{q.quotationNumber.split('-')[0].replace('CE', '')}
                             </span>
                           </td>
-                          <td style={{ padding: '12px 15px' }}>{q.billTo.name}</td>
-                          <td style={{ padding: '12px 15px' }}>+91 1234567890</td>
-                          <td style={{ padding: '12px 15px' }}>
+                          <td>{q.billTo.name}</td>
+                          <td>+91 1234567890</td>
+                          <td>
                             <div style={{ display: 'flex', gap: '5px' }}>
-                              <span style={{
-                                backgroundColor: '#cce5ff',
-                                padding: '4px 8px',
-                                borderRadius: '4px',
-                                fontSize: '12px'
-                              }}>
+                              <span className="brand-tag">
                                 Duraflame
                               </span>
-                              <span style={{
-                                backgroundColor: '#cce5ff',
-                                padding: '4px 8px',
-                                borderRadius: '4px',
-                                fontSize: '12px'
-                              }}>
+                              <span className="brand-tag">
                                 Nocte
                               </span>
                             </div>
                           </td>
-                          <td style={{ padding: '12px 15px', color: '#28a745' }}>
+                          <td className="grand-total">
                             <div>Duraflame: ₹67,664</div>
                             <div>Nocte: ₹93,392</div>
                           </td>
-                          <td style={{ padding: '12px 15px' }}>
+                          <td>
                             {new Date(q.quotationDate).toLocaleDateString('en-GB')}
                           </td>
-                          <td style={{ padding: '12px 15px' }}>
-                            <div style={{ display: 'flex', gap: '8px' }}>
+                          <td>
+                            <div className="action-btns">
                               <button
                                 onClick={() => setSelectedQuotation(q)}
-                                style={{
-                                  padding: '4px 8px',
-                                  // backgroundColor: '#6c757d',
-                                  color: 'white',
-                                  border: 'none',
-                                  borderRadius: '4px',
-                                  cursor: 'pointer'
-                                }}
+                                className="action-btn"
                               >
                                 📥
                               </button>
                               <button
                                 onClick={() => handleEdit(q)}
-                                style={{
-                                  padding: '4px 8px',
-                                  // backgroundColor: '#007bff',
-                                  color: 'white',
-                                  border: 'none',
-                                  borderRadius: '4px',
-                                  cursor: 'pointer'
-                                }}
+                                className="action-btn"
                               >
                                 ✏️
                               </button>
                               <button
                                 onClick={() => handleDelete(q._id, q.quotationNumber)}
-                                style={{
-                                  padding: '4px 8px',
-                                  // backgroundColor: '#dc3545',
-                                  color: 'white',
-                                  border: 'none',
-                                  borderRadius: '4px',
-                                  cursor: 'pointer'
-                                }}
+                                className="action-btn"
                               >
                                 🗑️
                               </button>
